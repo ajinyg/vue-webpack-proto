@@ -2,6 +2,8 @@ import Watcher from './watcher'
 /*
 	视图更新, 在getter中收集依赖，在setter中通知依赖更新视图
 	依赖管理器
+		为每一个数据都建立一个依赖管理器，把这个数据所有的依赖都管理起来
+
 */ 
 
 window.target = null

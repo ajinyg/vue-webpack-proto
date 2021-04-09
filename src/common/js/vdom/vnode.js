@@ -1,3 +1,11 @@
+/*
+		VNode的作用
+
+		我们在视图渲染之前，把写好的tmp模版编译成vnode并把它缓存起来，
+		然后等数据发生变化的时候，我们把发生变化后的vnode与之前缓存起来的vnode去做
+		比较，找出差异，然后有差异的vnode对应的真实dom节点就是我们需要重新渲染的dom节点，
+		最后根据有差异的vnode创建出来的真实dom节点再插入到视图中去，最后完成一次视图更新.
+*/ 
 export default class VNode {
 	constructor(
 		tag,//当前节点的标签名
@@ -43,3 +51,78 @@ export default class VNode {
 		return this.componentInstance;
 	}
 }
+/*
+	VNode类型 
+	1.注释节点
+	2.文本节点
+	3.元素节点
+	4.组件节点
+	5.函数式组件节点
+	6.克隆节点
+*/
+//注释节点
+export const createEmptyVNode = (text = '') => {
+	const node = new VNode();
+	node.text = text ;
+	node.isComment = true;
+	return node;
+}
+//文本节点
+export function createTextVNode (val){
+	return new VNode(undefined,undefined,undefined,String(val))
+}
+//克隆节点
+export function cloneVNode(vnode){
+	if(!(vnode && typeof vnode == 'object')){
+		return
+	}
+	const cloned = new VNode(
+		vnode.tag,
+		vnode.data,
+		vnode.children,
+		vnode.text,
+		vnode.elm,
+		vnode.context,
+		vnode.componentOptions,
+		vnode.asyncFactory
+	)
+	cloned.ns = vnode.ns;
+	cloned.isStatic = vnode.isStatic;
+	cloned.key = vnode.key;
+	cloned.isComment = vnode.isComment;
+	cloned.fnContext = vnode.fnContext;
+	cloned.fnOptions = vnode.fnOptions;
+	cloned.fnScopeId = vnode.fnScopeId;
+	cloned.asyncMeta = vnode.asyncMeta;
+	cloned.isCloned = true;
+	return cloned;
+}
+//元素节点
+/*
+	<div id="a"><span>hello,word!</span></div>
+
+	VNode 节点
+	{
+		tag :'div',
+		data : {},
+		children:[
+			{
+				tag:'span',
+				text:'hello,word!'
+			}
+		]
+	}
+*/ 
+//组件节点
+/*
+	组件节点除了有元素节点具有的属性之外，它还有两个特有的属性： 
+	1.componentOptions 组件的options选项，如组件的props
+	2.componentInstance 当前组件节点对应的Vue实例
+*/
+
+//函数式组件节点
+/*
+	函数式组件节点相较于组件节点，它又又两个特有的属性：
+	1.fnContext 函数式组件对应的Vue实例
+	2.fnOptions 组件的option选项
+*/ 

@@ -42,6 +42,7 @@ export default class Watcher {
 	constructor(vm,expOrFn,cb){
 		this.vm = vm;
 		this.cb = cb;
+		//获取被依赖的数据
 		this.getter = parsePath(expOrFn)
 		this.value = this.get();
 	}
