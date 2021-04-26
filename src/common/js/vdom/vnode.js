@@ -1,5 +1,9 @@
 /*
 		VNode的作用
+		vue 对状态侦测的策略采用了中等粒度，也就是说当状态发生改变时，
+		只会通知到组件，然后组件使用虚拟节点去渲染视图。
+		说明 ：也就是说，当组件内有一个状态发生了变化，那么整个组件
+		都需要重新渲染
 
 		我们在视图渲染之前，把写好的tmp模版编译成vnode并把它缓存起来，
 		然后等数据发生变化的时候，我们把发生变化后的vnode与之前缓存起来的vnode去做
@@ -8,8 +12,8 @@
 */ 
 export default class VNode {
 	constructor(
-		tag,//当前节点的标签名
-		data,//当前节点对应的对象，包含了具体的一些数据信息，是一个VNodeData类型
+		tag,//当前节点的标签名 如 p,ul,li,div ....
+		data,//如 attrs,class,style,当前节点对应的对象，包含了具体的一些数据信息，是一个VNodeData类型
 		children,//当前节点的子节点，是一个数组
 		text,//当前节点的文本
 		elm,//当前虚拟节点对应的真实DOM节点
@@ -32,9 +36,23 @@ export default class VNode {
 		this.fnOptions = undefined;
 		this.fnScopeId = undefined;
 		this.key = data && data.key;//节点的key属性，被当作节点的标志，用于优化
+		/*
+			解释 组件节点
+			<child></child>对应的vnode是下面的样子
+			{
+				componentsInstance:{},对应组件的实例
+				componentsOptions:{
+					propsData:{},
+					tag:'',
+					children : {}
+				},
+				context :{},
+				data:{},
+				tag:'vue-components-1-child'
+			}
+		*/ 
 
-
-		this.componentOptions = componentOptions;//组件options选项
+		this.componentOptions = componentOptions;//组件options选项 如propsData,tag,children
 		this.componentInstance = undefined; //当前节点对应组件的实例
 		this.parent = undefined;//当前节点的父节点
 		this.raw = false; //简而言之口就是是否为原生HTML或是普通文本，innerHTML的时候为true,textContext的时候为false
@@ -62,6 +80,12 @@ export default class VNode {
 */
 //注释节点
 export const createEmptyVNode = (text = '') => {
+	/*
+		{
+			text:'注释节点',
+			isComment : true
+		}
+	*/ 
 	const node = new VNode();
 	node.text = text ;
 	node.isComment = true;
@@ -69,10 +93,19 @@ export const createEmptyVNode = (text = '') => {
 }
 //文本节点
 export function createTextVNode (val){
+	/*
+		通过参数实例设置属性值时，无效的属性会默认赋值为 undefined 或 false
+
+		{
+			text : 'hello,word'
+		}
+
+	*/
+
 	return new VNode(undefined,undefined,undefined,String(val))
 }
 //克隆节点
-export function cloneVNode(vnode){
+export function cloneVNode(vnode,deep){
 	if(!(vnode && typeof vnode == 'object')){
 		return
 	}
@@ -95,6 +128,9 @@ export function cloneVNode(vnode){
 	cloned.fnScopeId = vnode.fnScopeId;
 	cloned.asyncMeta = vnode.asyncMeta;
 	cloned.isCloned = true;
+	if(deep && vnode.children){
+		cloned.children = cloneVNode(vnode.children);
+	}
 	return cloned;
 }
 //元素节点
